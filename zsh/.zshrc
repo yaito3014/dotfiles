@@ -8,5 +8,4 @@ source $ZSH/oh-my-zsh.sh
 export PATH=$PATH:$HOME/.local/bin
 eval "$(oh-my-posh init zsh --config $HOME/.oh-my-posh/config.toml)"
 
-# set env for WSL
-export PATH=$PATH:/mnt/c/Users/kakeyamay/AppData/Local/Programs/Microsoft\ VS\ Code/bin
+[ -f ~/.zshrc.local ] && source ~/.zshrc.local
