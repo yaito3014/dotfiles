@@ -1,3 +1,6 @@
 [submodule "zsh/.oh-my-zsh"]
 	path = zsh/.oh-my-zsh
 	url = https://github.com/ohmyzsh/ohmyzsh
+[submodule "vim/.cache/dein/repos/github.com/Shougo/dein.vim"]
+	path = vim/.cache/dein/repos/github.com/Shougo/dein.vim
+	url = https://github.com/Shougo/dein.vim
