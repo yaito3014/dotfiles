@@ -25,3 +25,29 @@
 - When committing, prefer several logically-scoped commits over one large one,
   as the change warrants.
 - No "Co-Authored-By" or "Generated with Claude Code" trailers in commits or PRs.
+
+## C++
+
+C++ is my primary language. Project config (`.clang-format`, target standard)
+always wins over these defaults.
+
+- Default new code to C++23; otherwise match the project's target standard, set
+  via `target_compile_features(... cxx_std_NN)`. Prefer modern standard
+  facilities over legacy idioms (`std::println`, ranges, `std::expected`, …).
+- Build with CMake (`target_compile_features`, not global `CMAKE_CXX_STANDARD`);
+  vcpkg for third-party dependencies.
+- Always run clang-format; the project's `.clang-format` is authoritative. It
+  sets east const — write `int const` / `T const&` by hand to match.
+- std-library naming: snake_case for types, functions, and variables; trailing
+  underscore on private data members (`value_`); everything inside a namespace.
+- Include guards with `#ifndef`/`#define`, project-prefixed (e.g. SLOT_SLOT_HPP),
+  not `#pragma once`.
+- Default idioms: `template<class T>` (not `typename`); `[[nodiscard]]` on pure
+  returns; `constexpr`/`noexcept` where correct; concepts/`requires` over SFINAE;
+  explicit `= default`/`= delete`; deducing-`this` for value-category-correct
+  accessors.
+- `explicit` on single-argument constructors unless implicit conversion is intended.
+- Const-correct throughout; prefer pure functions and immutable locals,
+  introducing mutation or side-effects only where genuinely needed.
+- Tests: Catch2 for new work (legacy uses Boost.Test) — match the project. Per
+  the TDD rule, write the failing Catch2 case first.
