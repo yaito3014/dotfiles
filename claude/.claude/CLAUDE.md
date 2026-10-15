@@ -39,14 +39,20 @@
   the conversation.
 - Title: a short imperative summary of the change (`Add X`, `Fix Y when Z`),
   no trailing period, ideally under ~70 characters.
-- Body: if the repository has a PR template, follow its structure. Otherwise:
-  - **Summary**: what changed and why, in 1–3 sentences.
-  - **Changes**: a bullet list of the notable changes, grouped logically.
-  - **Testing**: how it was verified (tests added, commands run); say plainly
-    what wasn't tested.
-  - Link related issues (`Fixes #123`, `Refs #456`) where applicable.
+- Body: if the repository has a PR template, follow its structure. Otherwise
+  write a short paragraph on what changed and why, add a bullet list only when
+  there are several distinct changes, and say how it was verified (tests
+  added, commands run) and plainly what wasn't tested. Link related issues
+  (`Fixes #123`, `Refs #456`) where applicable.
 - Describe the diff, not the session: no narration of how the change was
   arrived at, and no restating what is obvious from the code.
+- In commit messages and PR text, use ASCII only unless a non-ASCII character
+  is genuinely needed (e.g. quoting code or output that contains one): write
+  `-`, `->`, `...`, and straight quotes instead of dashes, arrows, ellipses,
+  and curly quotes.
+- No decorative structure in commit messages or PR text: no section headers,
+  horizontal rules (`---`), or bold labels unless the content is long enough
+  to genuinely need them.
 
 ## C++
 
