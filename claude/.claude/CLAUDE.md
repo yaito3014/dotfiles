@@ -75,8 +75,10 @@
 
 ## Issues
 
-- Use the repository's issue templates; otherwise plain prose under the same
-  rules as PR text.
+- Use the repository's issue templates; otherwise plain prose, with the same
+  formatting rules as PR text (no decorative structure).
+- Write in the language the repository's existing issues use; when commenting
+  on an existing issue, follow the thread's language.
 
 ## Code review
 
