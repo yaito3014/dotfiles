@@ -29,6 +29,10 @@
   as the change warrants.
 - Write commit messages in English, regardless of the language of the
   conversation.
+- In code comments, commit messages, and PR text, use ASCII only unless a
+  non-ASCII character is genuinely needed (e.g. quoting code or output that
+  contains one): write `-`, `->`, `...`, and straight quotes instead of
+  dashes, arrows, ellipses, and curly quotes.
 - Keep each branch/PR to one logical change; split out-of-scope work onto its
   own branch (off `main`) rather than folding it in.
 - No "Co-Authored-By" or "Generated with Claude Code" trailers in commits or PRs.
@@ -46,13 +50,8 @@
   (`Fixes #123`, `Refs #456`) where applicable.
 - Describe the diff, not the session: no narration of how the change was
   arrived at, and no restating what is obvious from the code.
-- In commit messages and PR text, use ASCII only unless a non-ASCII character
-  is genuinely needed (e.g. quoting code or output that contains one): write
-  `-`, `->`, `...`, and straight quotes instead of dashes, arrows, ellipses,
-  and curly quotes.
-- No decorative structure in commit messages or PR text: no section headers,
-  horizontal rules (`---`), or bold labels unless the content is long enough
-  to genuinely need them.
+- No decorative structure in commit messages or PR text: no section headers or
+  bold labels unless the content is long enough to genuinely need them.
 
 ## C++
 
