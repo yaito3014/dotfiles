@@ -32,7 +32,8 @@
 - In code comments, commit messages, and PR text, use ASCII only unless a
   non-ASCII character is genuinely needed (e.g. quoting code or output that
   contains one): write `-`, `->`, `...`, and straight quotes instead of
-  dashes, arrows, ellipses, and curly quotes.
+  dashes, arrows, ellipses, and curly quotes. Write code comments in English;
+  Japanese is acceptable only when genuinely necessary.
 - Keep each branch/PR to one logical change; split out-of-scope work onto its
   own branch (off `main`) rather than folding it in.
 - No "Co-Authored-By" or "Generated with Claude Code" trailers in commits or PRs.
