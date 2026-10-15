@@ -27,6 +27,8 @@
   committing.
 - When committing, prefer several logically-scoped commits over one large one,
   as the change warrants.
+- Write commit messages in English, regardless of the language of the
+  conversation.
 - Keep each branch/PR to one logical change; split out-of-scope work onto its
   own branch (off `main`) rather than folding it in.
 - No "Co-Authored-By" or "Generated with Claude Code" trailers in commits or PRs.
