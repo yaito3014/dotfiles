@@ -31,6 +31,21 @@
   own branch (off `main`) rather than folding it in.
 - No "Co-Authored-By" or "Generated with Claude Code" trailers in commits or PRs.
 
+## Pull requests
+
+- Write PR titles and descriptions in English, regardless of the language of
+  the conversation.
+- Title: a short imperative summary of the change (`Add X`, `Fix Y when Z`),
+  no trailing period, ideally under ~70 characters.
+- Body: if the repository has a PR template, follow its structure. Otherwise:
+  - **Summary**: what changed and why, in 1–3 sentences.
+  - **Changes**: a bullet list of the notable changes, grouped logically.
+  - **Testing**: how it was verified (tests added, commands run); say plainly
+    what wasn't tested.
+  - Link related issues (`Fixes #123`, `Refs #456`) where applicable.
+- Describe the diff, not the session: no narration of how the change was
+  arrived at, and no restating what is obvious from the code.
+
 ## C++
 
 C++ is my primary language. Project config (`.clang-format`, target standard)
