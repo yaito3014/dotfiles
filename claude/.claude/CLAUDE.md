@@ -21,12 +21,20 @@
   assertion or the test to make it pass.
 - Keep comments minimal: none for what's obvious from the code, only for
   non-obvious intent (the why).
+- No bare TODO/FIXME: say what and why, or link an issue. Delete dead code
+  instead of commenting it out.
 - After editing, re-read the surrounding area for inconsistencies the change
   introduced, and sweep for other instances of the same class of issue —
   including in submodules, and enumerating edge cases exhaustively — before
   committing.
 - When committing, prefer several logically-scoped commits over one large one,
   as the change warrants.
+- Commit messages: match the repository's existing convention (check
+  `git log`); if there is none, use a plain imperative subject.
+- Branch names: match the repository's prefix style; if there is none, use a
+  type prefix (`feat/`, `fix/`, `refactor/`, `docs/`, `chore/`, ...).
+- When addressing feedback on a pushed branch, add new commits; never rewrite
+  pushed history.
 - Write commit messages in English, regardless of the language of the
   conversation.
 - In code comments, commit messages, and PR text, use ASCII only unless a
@@ -42,8 +50,11 @@
 
 - Write PR titles and descriptions in English, regardless of the language of
   the conversation.
-- Title: a short imperative summary of the change (`Add X`, `Fix Y when Z`),
-  no trailing period, ideally under ~70 characters.
+- Title: follow the repository's commit subject convention; if there is none,
+  a short imperative summary of the change (`Add X`, `Fix Y when Z`), no
+  trailing period, ideally under ~70 characters.
+- Write the description for reviewers, even for a single-commit PR; don't
+  just copy the commit message.
 - Body: if the repository has a PR template, follow its structure. Otherwise
   write a short paragraph on what changed and why, add a bullet list only when
   there are several distinct changes, and say how it was verified (tests
@@ -53,6 +64,25 @@
   arrived at, and no restating what is obvious from the code.
 - No decorative structure in commit messages or PR text: no section headers or
   bold labels unless the content is long enough to genuinely need them.
+- Ask whether to open the PR as a draft or ready for review.
+- Before opening a PR or pushing to one: build and tests pass, formatters and
+  linters are clean, and the full diff has been re-read for stray changes,
+  debug output, and scope creep.
+- On review comments on my PRs, summarize the comment and the proposed fix to
+  me before acting.
+- For other GitHub text (issue bodies, comments, replies), follow the
+  thread's language; ASCII is still preferred.
+
+## Issues
+
+- Use the repository's issue templates; otherwise plain prose under the same
+  rules as PR text.
+
+## Code review
+
+- Label each finding by severity: blocking, should-fix, or nit.
+- Pair each finding with a concrete suggested fix.
+- Back correctness claims with the standard, docs, or code.
 
 ## C++
 
@@ -64,12 +94,7 @@ always wins over these defaults.
   facilities over legacy idioms (`std::println`, ranges, `std::expected`, …).
 - Gate each feature at the lowest standard it needs, guarded by feature-test
   macros (`__cpp_*`); lower the gate when a dependency's requirement drops.
-- Build with CMake (`target_compile_features`, not global `CMAKE_CXX_STANDARD`);
-  vcpkg for third-party dependencies.
-- For libraries, ship a full install/export (FILE_SET public headers, exported
-  `*-targets.cmake`, public deps linked PUBLIC) so they're consumable via both
-  `find_package` and FetchContent; as a consumer, take deps via
-  `find_package`/vcpkg, not FetchContent.
+- Build with CMake (see the CMake section).
 - Always run clang-format; the project's `.clang-format` is authoritative. It
   sets east const — write `int const` / `T const&` by hand to match.
 - std-library naming: snake_case for types, functions, and variables; trailing
@@ -91,3 +116,25 @@ always wins over these defaults.
   the TDD rule, write the failing Catch2 case first. For properties you can't
   eyeball (noexcept, `static_assert`, compile-time traits), add a test that
   actually exercises them.
+
+## CMake
+
+- Set the standard with `target_compile_features`, not global
+  `CMAKE_CXX_STANDARD`; vcpkg for third-party dependencies.
+- Target-based only: no directory-scoped commands (`include_directories`,
+  `add_definitions`, `link_libraries`).
+- For libraries, ship a full install/export (FILE_SET public headers, exported
+  `*-targets.cmake`, public deps linked PUBLIC) so they're consumable via both
+  `find_package` and FetchContent; as a consumer, take deps via
+  `find_package`/vcpkg, not FetchContent.
+
+## Shell
+
+- Prefer POSIX `sh`; use bash only when its features are needed.
+- Scripts must pass shellcheck.
+
+## Python
+
+- Use uv for projects, dependencies, and scripts; ruff for lint and format.
+- Type-hint fully and keep the type checker clean; follow the project's
+  choice of checker.
