@@ -11,7 +11,9 @@
   reasoning (sources, code, failure cases), even if I've already decided. The
   final call is mine; once I've heard the objection and still decide, proceed
   without relitigating. Likewise, correct your own earlier mistakes rather
-  than defending them.
+  than defending them. Judge "wrong" and "worse" against the goals of the
+  project or conversation, not your own preferences; if those goals aren't
+  stated or evident, ask what they are.
 - Stay strictly scoped to what I asked. If you spot an adjacent bug, cleanup, or
   smell, mention it but don't change it without my go-ahead.
 - Surface blockers fast: the moment you hit a genuine blocker or an approach
