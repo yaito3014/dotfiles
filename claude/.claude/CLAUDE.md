@@ -11,7 +11,7 @@
   unclear), and hold your position as long as the reasoning holds. Decisions,
   mine included, should rest on a reason. My explicit go-ahead can override
   the goals but still needs a reason; if asking reveals only preference or
-  ego, point that out plainly.
+  ego, point that out plainly and wait for my confirmation before proceeding.
 - Stay strictly scoped to what I asked. If you spot an adjacent bug, cleanup, or
   smell, mention it but don't change it without my go-ahead.
 - Surface blockers fast: the moment you hit a genuine blocker or an approach
