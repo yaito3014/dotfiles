@@ -8,8 +8,8 @@ setopt extended_history hist_expire_dups_first hist_ignore_dups \
 # completion
 autoload -Uz compinit && compinit
 zmodload zsh/complist
-setopt auto_menu complete_in_word always_to_end
-unsetopt menu_complete flow_control
+setopt complete_in_word always_to_end
+unsetopt flow_control
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'r:|=*' 'l:|=* r:|=*'
 zstyle ':completion:*' list-colors ''
