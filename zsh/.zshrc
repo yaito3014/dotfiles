@@ -1,3 +1,5 @@
+alias ls='ls --color=auto'
+
 # history
 HISTFILE=~/.zsh_history
 HISTSIZE=50000
