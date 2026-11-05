@@ -33,4 +33,5 @@ bindkey '^[[Z' reverse-menu-complete
 # oh-my-posh
 eval "$(oh-my-posh init zsh --config $HOME/.oh-my-posh/config.toml)"
 
+# local overrides
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
