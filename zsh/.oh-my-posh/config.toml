@@ -3,9 +3,9 @@ version = 3
 
 [upgrade]
   source = 'cdn'
-  interval = '168h'
+  interval = '24h'
   auto = false
-  notice = false
+  notice = true
 
 [[blocks]]
   type = 'prompt'
