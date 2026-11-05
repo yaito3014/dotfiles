@@ -12,7 +12,6 @@ setopt complete_in_word always_to_end
 unsetopt flow_control
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'r:|=*' 'm:{[:lower:][:upper:]}={[:upper:][:lower:]} l:|=* r:|=*'
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 
 # key bindings
 WORDCHARS=''
