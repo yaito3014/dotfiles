@@ -29,6 +29,9 @@ bindkey '^[OH' beginning-of-line
 bindkey '^[[F' end-of-line
 bindkey '^[OF' end-of-line
 bindkey '^[[3~' delete-char
+bindkey '^[[1;5C' forward-word
+bindkey '^[[1;5D' backward-word
+bindkey '^[[Z' reverse-menu-complete
 
 # oh-my-posh
 eval "$(oh-my-posh init zsh --config $HOME/.oh-my-posh/config.toml)"
