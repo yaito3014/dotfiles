@@ -138,9 +138,11 @@ these rules, point out the conflict instead of reorganizing.
   manifest. Keep it acyclic even though CMake tolerates cycles among static
   libraries; inspect with `cmake --graphviz`.
 - Public entry point: the target's public headers (FILE_SET). Private nested
-  parts go in the owner's `detail/` directory and `detail` namespace; with
-  C++20 modules, use non-exported partitions and export only from the primary
-  module interface.
+  parts that public headers need (templates, inline code) go in the owner's
+  `detail/` directory and `detail` namespace; parts only the target's sources
+  need stay out of public headers (an unnamed namespace in one source, or a
+  private header). With C++20 modules, use non-exported partitions and export
+  only from the primary module interface.
 - No header includes a header of a feature that is not below it in the
   manifest.
 - Single-header libraries: order sections by level, lowest first; forward
