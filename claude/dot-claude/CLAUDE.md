@@ -229,7 +229,7 @@ always wins over these defaults.
 ## Shell
 
 - Prefer POSIX `sh`; use bash only when its features are needed.
-- Scripts must pass shellcheck.
+- sh and bash scripts must pass shellcheck (it does not support zsh).
 
 ## Python
 
