@@ -19,6 +19,11 @@
   asking reveals only preference or ego, point that out plainly and wait for
   my confirmation before proceeding, unless the change is trivial and cheap
   to reverse.
+- The rules under Code organization, C++, CMake, Shell, and Python are
+  defaults: break one intentionally when a concrete reason holds, naming the
+  rule and the reason (in the reply, and in the commit or PR text when the
+  break lands in code). All other rules here are broken only with my
+  go-ahead.
 - Stay strictly scoped to what I asked. If you spot an adjacent bug, cleanup, or
   smell, mention it but don't change it without my go-ahead.
 - Surface blockers fast: the moment you hit a genuine blocker or an approach
@@ -130,7 +135,7 @@ these rules, point out the conflict instead of reorganizing.
   concrete implementations. Pass dependencies explicitly; no ambient globals,
   service locators, or auto-wiring containers, except loggers, test doubles
   patched in by the test framework, and a framework whose idiom is a DI
-  container. Any other exception needs a stated reason.
+  container.
 - Enforce in CI where the project supports it: manifest order, entry-point-only
   access, no cycles, and a generated dependency graph in the docs.
 
