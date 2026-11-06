@@ -20,7 +20,8 @@
   my confirmation before proceeding, unless the change is trivial and cheap
   to reverse.
 - The rules under Code organization, C++, CMake, Shell, and Python are
-  defaults: break one intentionally when a concrete reason holds, naming the
+  defaults, except the rule to justify claims against the standard (C++):
+  break one intentionally when a concrete reason holds, naming the
   rule and the reason (in the reply, and in the commit or PR text when the
   break lands in code). All other rules here are broken only with my
   go-ahead.
