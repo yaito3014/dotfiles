@@ -99,6 +99,80 @@
 - Pair each finding with a concrete suggested fix.
 - Back correctness claims with the standard, docs, or code.
 
+## Code organization
+
+Applies when designing new code or when I ask for restructuring. In an
+existing codebase, follow its established structure; where it conflicts with
+these rules, point out the conflict instead of reorganizing.
+
+- Core rule: dependency order is reading order. The codebase should be
+  readable bottom-up along its dependency DAG.
+- No dependency cycles at any granularity (function, file, module, package).
+  Genuine mutual recursion (e.g. a recursive data type) is collapsed into one
+  unit, not split across modules.
+- Within a file, define before use, so it reads top-down without forward
+  references.
+- Each module hides one design decision likely to change, statable in one
+  sentence. If it can't be stated, the boundary is wrong; raise it.
+- Prefer deep modules: small interface, much hidden. Merge pass-through layers
+  instead of adding them.
+- Organize by feature, not by technical layer. Place each module under the
+  lowest common ancestor of its consumers (the dominator tree of the
+  dependency graph, rooted at the composition root), so nesting means private
+  to the parent. When a consumer outside the parent appears, hoist the module
+  and say so in the change: a private detail is becoming shared API.
+- Cross-feature access goes only through the feature's public entry point.
+- Record allowed edges between top-level features in one manifest, in
+  topological order (every dependency listed before its dependents). A new
+  edge means editing the manifest and stating why in the commit or PR.
+- When a dependency would point upward, invert it: the consumer owns the
+  interface, the provider implements it, and only the composition root wires
+  concrete implementations. Pass dependencies explicitly; no ambient globals,
+  service locators, or auto-wiring containers.
+- Enforce in CI where the project supports it: manifest order, entry-point-only
+  access, no cycles, and a generated dependency graph in the docs.
+
+### In C++
+
+- A feature is a CMake target; the `target_link_libraries` graph is the
+  manifest. Keep it acyclic even though CMake tolerates cycles among static
+  libraries; inspect with `cmake --graphviz`.
+- Public entry point: the target's public headers (FILE_SET). Private nested
+  parts go in the owner's `detail/` directory and `detail` namespace; with
+  C++20 modules, use non-exported partitions and export only from the primary
+  module interface.
+- No header includes a header of a feature that is not below it in the
+  manifest.
+- Single-header libraries: order sections by level, lowest first; forward
+  declarations only for intentional recursion within one collapsed unit.
+- Injection: statically via concept-constrained template parameters, where the
+  consumer owns the concept; dynamically via type erasure or a consumer-owned
+  virtual interface. Prefer static unless runtime substitution is needed.
+
+### In TypeScript
+
+- A feature is a directory whose `index.ts` is the only cross-feature import
+  target. Import across features via the path alias, never `../` out of a
+  feature (enforce with a dependency-cruiser rule forbidding cross-feature
+  imports other than `index.ts`; `import/no-relative-parent-imports` is
+  stricter, banning `../` within a feature too).
+- Manifest: `architecture.json`, checked by a script or dependency-cruiser.
+  Check cycles with madge or dependency-cruiser; ES modules permit cycles, but
+  they cause TDZ and load-order bugs.
+- Injection: factory functions taking a deps object, typed with
+  consumer-owned interfaces. The composition root is `main.ts`.
+- Use `#private` for real hiding (`private` is compile-time only) and branded
+  types where an opaque boundary matters.
+
+### In Python
+
+- A feature is a package; `__init__.py` is its entry point and defines
+  `__all__`. Private nested modules and packages are underscore-prefixed.
+- Manifest: import-linter contracts (layers, independence, forbidden) in
+  `pyproject.toml`. No import cycles.
+- Injection: pass collaborators as arguments, typed with a consumer-owned
+  `Protocol`.
+
 ## C++
 
 C++ is my primary language. Project config (`.clang-format`, target standard)
