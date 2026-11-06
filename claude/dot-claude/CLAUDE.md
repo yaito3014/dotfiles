@@ -151,11 +151,14 @@ these rules, point out the conflict instead of reorganizing.
 
 ### In TypeScript
 
-- A feature is a directory whose `index.ts` is the only cross-feature import
-  target. Import across features via the path alias, never `../` out of a
-  feature (enforce with a dependency-cruiser rule forbidding cross-feature
-  imports other than `index.ts`; `import/no-relative-parent-imports` is
-  stricter, banning `../` within a feature too).
+- A feature is a directory whose declared entry modules are the only
+  cross-feature import targets. Declare them in one place, e.g. the
+  `package.json` `exports`/`imports` map (`#feature`, `#feature/sub`) or the
+  path alias config; an `index.ts` is one option, not required. Import across
+  features via those specifiers, never `../` out of a feature (enforce with a
+  dependency-cruiser rule forbidding cross-feature imports of non-entry
+  modules; `import/no-relative-parent-imports` is stricter, banning `../`
+  within a feature too).
 - Manifest: `architecture.json`, checked by a script or dependency-cruiser.
   Check cycles with madge or dependency-cruiser; ES modules permit cycles, but
   they cause TDZ and load-order bugs.
