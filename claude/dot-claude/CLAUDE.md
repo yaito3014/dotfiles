@@ -202,7 +202,8 @@ always wins over these defaults.
   when targeting C++20+ (fall back to `enable_if`/`void_t` below C++20);
   explicit `= default`/`= delete`; deducing-`this` for value-category-correct
   accessors.
-- `explicit` on single-argument constructors unless implicit conversion is intended.
+- `explicit` on converting constructors callable with one argument (not
+  copy/move constructors) unless implicit conversion is intended.
 - Const-correct throughout; prefer pure functions and immutable locals,
   introducing mutation or side-effects only where genuinely needed.
 - Justify UB, strict-aliasing, `constexpr`, and `noexcept` claims against the
