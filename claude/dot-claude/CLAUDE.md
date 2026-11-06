@@ -1,5 +1,5 @@
 # Global preferences
-<!-- Managed in dotfiles: ~/dotfiles/claude/.claude/CLAUDE.md, symlinked to
+<!-- Managed in dotfiles: ~/dotfiles/claude/dot-claude/CLAUDE.md, symlinked to
      ~/.claude/CLAUDE.md, ~/.codex/AGENTS.md, ~/.gemini/GEMINI.md and
      ~/.copilot/copilot-instructions.md -->
 
