@@ -217,7 +217,8 @@ always wins over these defaults.
   `CMAKE_CXX_STANDARD`; vcpkg for third-party dependencies.
 - Target-based only: no directory-scoped commands (`include_directories`,
   `add_definitions`, `link_libraries`).
-- For libraries, ship a full install/export (FILE_SET public headers, exported
+- For libraries meant for outside consumers (not internal feature targets),
+  ship a full install/export (FILE_SET public headers, exported
   `*-targets.cmake`, public deps linked PUBLIC) so they're consumable via both
   `find_package` and FetchContent; as a consumer, take deps via
   `find_package`/vcpkg, not FetchContent.
