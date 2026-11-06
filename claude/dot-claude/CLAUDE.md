@@ -194,7 +194,9 @@ always wins over these defaults.
 - Always run clang-format; the project's `.clang-format` is authoritative. It
   sets east const — write `int const` / `T const&` by hand to match.
 - std-library naming: snake_case for types, functions, and variables; trailing
-  underscore on private data members (`value_`); everything inside a namespace.
+  underscore on private data members (`value_`); everything inside a
+  namespace, except what must belong to the global scope (`main`, replacement
+  `operator new`/`operator delete`).
 - Include guards with `#ifndef`/`#define`, project-prefixed (e.g. SLOT_SLOT_HPP),
   not `#pragma once`.
 - Default idioms: `template<class T>` (not `typename`); `[[nodiscard]]` on pure
