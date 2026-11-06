@@ -159,11 +159,13 @@ these rules, point out the conflict instead of reorganizing.
   dependency-cruiser rule forbidding cross-feature imports of non-entry
   modules; `import/no-relative-parent-imports` is stricter, banning `../`
   within a feature too).
-- Manifest: `architecture.json`, checked by a script or dependency-cruiser.
+- Manifest: one file (e.g. `architecture.json`, or the dependency-cruiser
+  config itself), checked by a script or dependency-cruiser.
   Check cycles with madge or dependency-cruiser; ES modules permit cycles, but
   they cause TDZ and load-order bugs.
 - Injection: factory functions taking a deps object, typed with
-  consumer-owned interfaces. The composition root is `main.ts`.
+  consumer-owned interfaces. The composition root is the app's entry module
+  (e.g. `main.ts`).
 - Use `#private` for real hiding (`private` is compile-time only) and branded
   types where an opaque boundary matters.
 
