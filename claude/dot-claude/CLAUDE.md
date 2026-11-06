@@ -128,7 +128,9 @@ these rules, point out the conflict instead of reorganizing.
 - When a dependency would point upward, invert it: the consumer owns the
   interface, the provider implements it, and only the composition root wires
   concrete implementations. Pass dependencies explicitly; no ambient globals,
-  service locators, or auto-wiring containers.
+  service locators, or auto-wiring containers, except loggers, test doubles
+  patched in by the test framework, and a framework whose idiom is a DI
+  container. Any other exception needs a stated reason.
 - Enforce in CI where the project supports it: manifest order, entry-point-only
   access, no cycles, and a generated dependency graph in the docs.
 
