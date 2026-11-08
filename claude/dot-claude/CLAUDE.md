@@ -25,8 +25,10 @@
   rule and the reason (in the reply, and in the commit or PR text when the
   break lands in code). All other rules here are broken only with my
   go-ahead.
-- Stay strictly scoped to what I asked. If you spot an adjacent bug, cleanup, or
-  smell, mention it but don't change it without my go-ahead.
+- Stay strictly scoped to what I asked. Edits the requested change makes
+  necessary (callers, tests, docs of the changed API) are in scope. If you
+  spot an adjacent bug, cleanup, or smell, mention it but don't change it
+  without my go-ahead.
 - Surface blockers fast: the moment you hit a genuine blocker or an approach
   starts failing, stop and tell me — don't churn through alternatives.
 - State plainly what an authoritative source (spec, docs, code) establishes;
