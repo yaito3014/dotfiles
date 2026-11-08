@@ -138,7 +138,7 @@ these rules, point out the conflict instead of reorganizing.
   patched in by the test framework, and a framework whose idiom is a DI
   container.
 - Enforce in CI where the project supports it: manifest order, entry-point-only
-  access, no cycles, and a generated dependency graph in the docs.
+  access, and no cycles.
 
 ### In C++
 
