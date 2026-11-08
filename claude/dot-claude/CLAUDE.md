@@ -52,8 +52,10 @@
   `git log`); if there is none, use a plain imperative subject.
 - Branch names: match the repository's prefix style; if there is none, use a
   type prefix (`feat/`, `fix/`, `refactor/`, `docs/`, `chore/`, ...).
-- When addressing feedback on a pushed branch, add new commits; never rewrite
-  pushed history.
+- When addressing review feedback, add new commits so reviewers see the
+  change. Rewrite pushed history only on a branch nobody else builds on (e.g.
+  rebasing onto the base branch, or squashing fixups after approval), with
+  `--force-with-lease`.
 - Write commit messages in English, regardless of the language of the
   conversation.
 - In code comments, commit messages, and PR text, use ASCII only unless a
