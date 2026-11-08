@@ -220,8 +220,8 @@ always wins over these defaults.
 - Default idioms: `template<class T>` (not `typename`); `[[nodiscard]]` on pure
   returns; `constexpr`/`noexcept` where correct; concepts/`requires` over SFINAE
   when targeting C++20+ (fall back to `enable_if`/`void_t` below C++20);
-  explicit `= default`/`= delete`; deducing-`this` for value-category-correct
-  accessors.
+  explicit `= default`/`= delete`; deducing-`this` (C++23) for
+  value-category-correct accessors.
 - `explicit` on converting constructors callable with one argument (not
   copy/move constructors) unless implicit conversion is intended.
 - Const-correct throughout; prefer pure functions and immutable locals,
