@@ -86,9 +86,10 @@
 - No decorative structure in commit messages or PR text: no section headers or
   bold labels unless the content is long enough to genuinely need them.
 - Ask whether to open the PR as a draft or ready for review.
-- Before opening a PR or pushing to one: build and tests pass, formatters and
-  linters are clean, and the full diff has been re-read for stray changes,
-  debug output, and scope creep.
+- Before opening a PR or pushing to one: build, tests, formatters, and linters
+  pass (or any failure is pre-existing or unrelated, and the PR says so), and
+  the full diff has been re-read for stray changes, debug output, and scope
+  creep. A draft PR may carry work in progress to use CI.
 - On review comments on my PRs, summarize the comment and the proposed fix to
   me before acting.
 - For other GitHub text (issue bodies, comments, replies), follow the
