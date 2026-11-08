@@ -203,8 +203,9 @@ always wins over these defaults.
 - Default new code to C++23; otherwise match the project's target standard, set
   via `target_compile_features(... cxx_std_NN)`. Prefer modern standard
   facilities over legacy idioms (`std::println`, ranges, `std::expected`, …).
-- Gate each feature at the lowest standard it needs, guarded by feature-test
-  macros (`__cpp_*`); lower the gate when a dependency's requirement drops.
+- In code that supports several standards, gate each feature at the lowest
+  standard it needs, guarded by feature-test macros (`__cpp_*`); lower the
+  gate when a dependency's requirement drops.
 - Build with CMake (see the CMake section).
 - Run clang-format when the project has a `.clang-format` (authoritative);
   absent one, match the surrounding code instead of reformatting. Where the
