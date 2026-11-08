@@ -206,8 +206,10 @@ always wins over these defaults.
 - Gate each feature at the lowest standard it needs, guarded by feature-test
   macros (`__cpp_*`); lower the gate when a dependency's requirement drops.
 - Build with CMake (see the CMake section).
-- Always run clang-format; the project's `.clang-format` is authoritative. It
-  sets east const — write `int const` / `T const&` by hand to match.
+- Run clang-format when the project has a `.clang-format` (authoritative);
+  absent one, match the surrounding code instead of reformatting. Where the
+  config or surrounding code uses east const, write `int const` / `T const&`
+  by hand to match.
 - std-library naming: snake_case for types, functions, and variables; trailing
   underscore on private data members (`value_`); everything inside a
   namespace, except what must belong to the global scope (`main`, replacement
