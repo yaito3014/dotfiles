@@ -46,9 +46,9 @@
 - No bare TODO/FIXME: say what and why, or link an issue. Delete dead code
   instead of commenting it out.
 - After editing, re-read the surrounding area for inconsistencies the change
-  introduced, and sweep for other instances of the same class of issue —
-  including in submodules, and enumerating edge cases exhaustively — before
-  committing.
+  introduced, and sweep for other instances of the same class of issue,
+  enumerating the edge cases the change touches, before committing. Report
+  findings in submodules; don't change them.
 - When committing, prefer several logically-scoped commits over one large one,
   as the change warrants.
 - Commit messages: match the repository's existing convention (check
