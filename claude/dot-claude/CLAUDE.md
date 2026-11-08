@@ -67,7 +67,8 @@
   dashes, arrows, ellipses, and curly quotes. Write code comments in English;
   Japanese is acceptable only when genuinely necessary.
 - Keep each branch/PR to one logical change; split out-of-scope work onto its
-  own branch (off `main`) rather than folding it in.
+  own branch (off the default branch, or stacked on the current one when it
+  depends on it) rather than folding it in.
 - No "Co-Authored-By" or "Generated with Claude Code" trailers in commits or PRs.
 
 ## Pull requests
