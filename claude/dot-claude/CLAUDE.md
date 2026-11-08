@@ -37,7 +37,8 @@
 - Prefer test-driven development: when adding or changing behavior, write a
   failing test first, then implement until it passes.
 - When a test or assertion fails, fix the root cause — don't weaken the
-  assertion or the test to make it pass.
+  assertion or the test to make it pass. If the assertion itself is wrong,
+  fixing it is the root-cause fix: say so and show why.
 - Keep comments minimal: none for what's obvious from the code, only for
   non-obvious intent (the why).
 - No bare TODO/FIXME: say what and why, or link an issue. Delete dead code
