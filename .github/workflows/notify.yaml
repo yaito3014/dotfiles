@@ -1,0 +1,10 @@
+on:
+  push:
+    branches: [main]
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh api repos/yaito3014/ops/dispatches -f event_type=dotfiles-updated
+        env:
+          GH_TOKEN: ${{ secrets.OPS_DISPATCH_TOKEN }}
