@@ -1,0 +1,32 @@
+name: test
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -q && sudo apt-get install -y -q shellcheck stow
+      - run: shellcheck install.sh link.sh dotfiles-sync/dot-local/bin/dotfiles-sync tests/*.sh
+      - run: for t in tests/*_test.sh; do sh "$t"; done
+  install:
+    runs-on: ubuntu-latest
+    env:
+      DOTFILES_DIR: ${{ github.workspace }}
+      DOTFILES_RUNNER: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./install.sh
+      - name: re-run moves nothing aside
+        run: |
+          backups() { find ~/.local/state/dotfiles/backup -mindepth 1 -maxdepth 1 2>/dev/null | wc -l; }
+          before=$(backups)
+          ./install.sh
+          test "$(backups)" = "$before"
+      - run: |
+          test "$(readlink -f ~/.zshrc)" = "$PWD/zsh/dot-zshrc"
+          test "$(getent passwd "$(id -un)" | cut -d: -f7)" = "$(command -v zsh)"
+          ~/.local/bin/mise --version
+          ~/.local/bin/oh-my-posh --version
