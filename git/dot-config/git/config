@@ -1,0 +1,10 @@
+[user]
+	name = yaito3014
+	email = ykakeyama3014@gmail.com
+[pull]
+	ff = only
+[push]
+	autoSetupRemote = true
+	useForceIfIncludes = true
+[fetch]
+	prune = true
