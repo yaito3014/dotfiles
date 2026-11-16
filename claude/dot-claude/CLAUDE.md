@@ -59,8 +59,9 @@
   type prefix (`feat/`, `fix/`, `refactor/`, `docs/`, `chore/`, ...).
 - When addressing review feedback, add new commits so reviewers see the
   change. Rewrite pushed history only on a branch nobody else builds on (e.g.
-  rebasing onto the base branch, or squashing fixups after approval), with
-  `--force-with-lease`.
+  rebasing onto the base branch), with `--force-with-lease`. In a
+  squash-merged repository, branch commits are review history: fixup commits
+  are fine and need no squashing.
 - Write commit messages in English, regardless of the language of the
   conversation.
 - In code comments, commit messages, and PR text, use ASCII only unless a
@@ -70,7 +71,12 @@
   Japanese is acceptable only when genuinely necessary.
 - Keep each branch/PR to one logical change; split out-of-scope work onto its
   own branch (off the default branch, or stacked on the current one when it
-  depends on it) rather than folding it in.
+  depends on it) rather than folding it in. After a base PR is squash-merged,
+  rebase the stacked branch with `git rebase --onto <default> <old-base>` so
+  the base's original commits don't reappear.
+- In my repositories, prefer a PR squash-merged into the default branch;
+  push directly to it only for very small changes. When I ask you to merge,
+  use `gh pr merge --squash`. Other repositories keep their own merge method.
 - No "Co-Authored-By" or "Generated with Claude Code" trailers in commits or PRs.
 
 ## Pull requests
@@ -81,7 +87,9 @@
   a short imperative summary of the change (`Add X`, `Fix Y when Z`), no
   trailing period, ideally under ~70 characters.
 - Write the description for reviewers, even for a single-commit PR; don't
-  just copy the commit message.
+  just copy the commit message. Under squash merging, the title (and the
+  description, when the repository uses it as the squash message) becomes
+  the commit on the default branch, so write it to read well in `git log`.
 - Body: if the repository has a PR template, follow its structure. Otherwise
   write a short paragraph on what changed and why, add a bullet list only when
   there are several distinct changes, and say how it was verified (tests
