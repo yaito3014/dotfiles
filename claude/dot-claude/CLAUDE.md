@@ -251,6 +251,16 @@ always wins over these defaults.
   `find_package` and FetchContent; as a consumer, take deps via
   `find_package`/vcpkg, not FetchContent.
 
+## mise
+
+- When a project has a `mise.toml` or `.tool-versions`, use the tool versions
+  it pins and run its tasks with `mise run`. If mise-managed tools aren't on
+  PATH, run commands through `mise exec --` instead of installing the tools
+  another way.
+- Ask before adding, upgrading, or removing a tool in a project's mise config;
+  never change the global mise config (`mise use -g`).
+- Don't add Python to a mise config: uv manages Python (see Python).
+
 ## Shell
 
 - Prefer POSIX `sh`; use bash only when its features are needed.
@@ -258,6 +268,7 @@ always wins over these defaults.
 
 ## Python
 
-- Use uv for projects, dependencies, and scripts; ruff for lint and format.
+- Use uv for Python interpreters, projects, dependencies, and scripts; ruff
+  for lint and format.
 - Type-hint fully and keep the type checker clean; follow the project's
   choice of checker.
