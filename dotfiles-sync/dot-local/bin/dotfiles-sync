@@ -1,0 +1,27 @@
+#!/bin/sh
+# Fast-forward the deploy clone of the dotfiles to origin/main and relink.
+set -eu
+
+main() {
+    dir=${DOTFILES_DIR:-$HOME/.local/share/dotfiles}
+    if [ ! -d "$dir/.git" ]; then
+        echo "$dir is not a clone of the dotfiles; run install.sh first" >&2
+        return 1
+    fi
+    cd "$dir"
+    if [ "$(git symbolic-ref --quiet --short HEAD || true)" != main ] ||
+        [ -n "$(git status --porcelain)" ]; then
+        echo "$dir is not a clean checkout of main; not syncing" >&2
+        return 1
+    fi
+    [ "$(git ls-remote origin refs/heads/main | cut -f1)" != "$(git rev-parse HEAD)" ] ||
+        return 0
+    git fetch --quiet origin main
+    git merge --quiet --ff-only FETCH_HEAD
+    ./link.sh
+    systemctl --user daemon-reload
+}
+
+# Wrapped in a function so the whole script is read before the merge can
+# replace this file.
+main "$@"

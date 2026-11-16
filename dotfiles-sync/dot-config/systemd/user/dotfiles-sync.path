@@ -1,0 +1,8 @@
+[Unit]
+Description=Sync dotfiles when the self-hosted runner signals a push
+
+[Path]
+PathChanged=/run/dotfiles-sync/trigger
+
+[Install]
+WantedBy=default.target
