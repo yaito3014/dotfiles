@@ -32,6 +32,9 @@ bindkey '^[[1;5C' forward-word
 bindkey '^[[1;5D' backward-word
 bindkey '^[[Z' reverse-menu-complete
 
+# mise
+command -v mise >/dev/null && eval "$(mise activate zsh)"
+
 # oh-my-posh
 eval "$(oh-my-posh init zsh --config $HOME/.oh-my-posh/config.toml)"
 
