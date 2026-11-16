@@ -34,6 +34,8 @@ git_state() {
   cwd=$(field .cwd)
   { [ -n "$cwd" ] && cd "$cwd" 2>/dev/null; } || return 0
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
+  # ls-files lists only paths under the current directory.
+  cd "$(git rev-parse --show-toplevel)"
   {
     git rev-parse HEAD 2>/dev/null || :
     git status --porcelain=v1 --untracked-files=all
