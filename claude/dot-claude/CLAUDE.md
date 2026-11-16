@@ -96,6 +96,9 @@
   creep. A draft PR may carry work in progress to use CI.
 - On review comments on my PRs, summarize the comment and the proposed fix to
   me before acting.
+- On review threads opened by bot accounts, resolve the thread without
+  replying once the fix is pushed. If I decide not to fix it, leave the thread
+  open and ask me how to handle it.
 - For other GitHub text (issue bodies, comments, replies), follow the
   thread's language; ASCII is still preferred.
 
