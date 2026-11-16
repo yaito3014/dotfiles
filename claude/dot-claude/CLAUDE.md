@@ -45,10 +45,12 @@
   non-obvious intent (the why).
 - No bare TODO/FIXME: say what and why, or link an issue. Delete dead code
   instead of commenting it out.
-- After editing, re-read the surrounding area for inconsistencies the change
-  introduced, and sweep for other instances of the same class of issue,
-  enumerating the edge cases the change touches, before committing. Report
-  findings in submodules; don't change them.
+- Self-review every change before reporting it done or committing it: re-read
+  the full diff, not just the edited lines, and the surrounding area for
+  inconsistencies the change introduced, stray edits, debug output, and scope
+  creep; sweep for other instances of the same class of issue, enumerating the
+  edge cases the change touches. Fix what you find, or say what you left and
+  why. Report findings in submodules; don't change them.
 - When committing, prefer several logically-scoped commits over one large one,
   as the change warrants.
 - Commit messages: match the repository's existing convention (check
