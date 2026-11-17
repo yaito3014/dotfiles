@@ -1,6 +1,7 @@
 #!/bin/sh
 # Tests for dotfiles-sync against a local origin whose link.sh and systemctl
-# are stubs that only record that they ran.
+# are stubs that only record that they ran. Each run goes through a link in
+# $HOME/.local/bin into the clone, as stow installs it.
 set -eu
 
 repo=$(cd -P "$(dirname "$0")/.." && pwd)
@@ -17,7 +18,7 @@ fail() {
 export HOME="$scratch/home" GIT_CONFIG_NOSYSTEM=1
 export GIT_AUTHOR_NAME=test GIT_AUTHOR_EMAIL=test@example.invalid
 export GIT_COMMITTER_NAME=test GIT_COMMITTER_EMAIL=test@example.invalid
-mkdir -p "$HOME" "$scratch/bin"
+mkdir -p "$HOME/.local/bin" "$scratch/bin"
 log=$scratch/log
 
 cat >"$scratch/bin/systemctl" <<EOF
@@ -34,7 +35,9 @@ cat >"$work/link.sh" <<EOF
 echo link >>"$log"
 EOF
 chmod +x "$work/link.sh"
-git -C "$work" add link.sh
+mkdir -p "$work/dotfiles-sync/dot-local/bin"
+cp "$sync" "$work/dotfiles-sync/dot-local/bin/"
+git -C "$work" add .
 git -C "$work" commit -q -m init
 git clone -q --bare "$work" "$scratch/origin.git"
 git -C "$work" remote add origin "$scratch/origin.git"
@@ -55,7 +58,9 @@ new_deploy() {
 
 run_sync() {
     : >"$log"
-    DOTFILES_DIR=$1 "$sync" >/dev/null 2>&1
+    ln -sfn "$1/dotfiles-sync/dot-local/bin/dotfiles-sync" \
+        "$HOME/.local/bin/dotfiles-sync"
+    "$HOME/.local/bin/dotfiles-sync" >/dev/null 2>&1
 }
 
 d=$(new_deploy)
@@ -86,7 +91,18 @@ if run_sync "$d"; then fail "other branch: exited zero"; fi
     fail "other branch: switched branches"
 [ ! -s "$log" ] || fail "other branch: ran $(cat "$log")"
 
-if run_sync "$scratch/missing"; then fail "missing clone: exited zero"; fi
+# Follows its link to the clone, whatever DOTFILES_DIR says.
+d=$(new_deploy)
+push_change four
+(export DOTFILES_DIR="$scratch/elsewhere" && run_sync "$d") ||
+    fail "linked clone: exited non-zero"
+[ "$(git -C "$d" rev-parse HEAD)" = "$(git -C "$work" rev-parse HEAD)" ] ||
+    fail "linked clone: did not fast-forward"
+
+lone=$scratch/lone
+mkdir -p "$lone/dotfiles-sync/dot-local/bin"
+cp "$sync" "$lone/dotfiles-sync/dot-local/bin/"
+if run_sync "$lone"; then fail "not a clone: exited zero"; fi
 
 [ "$failures" -eq 0 ] || exit 1
 echo "sync_test: ok"

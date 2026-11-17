@@ -1,9 +1,12 @@
 #!/bin/sh
-# Fast-forward the deploy clone of the dotfiles to origin/main and relink.
+# Fast-forward the dotfiles clone this script is linked from to origin/main
+# and relink.
 set -eu
 
 main() {
-    dir=${DOTFILES_DIR:-$HOME/.local/share/dotfiles}
+    # Found through the link stow made, so a clone chosen with DOTFILES_DIR at
+    # install time needs no configuration here.
+    dir=$(cd "$(dirname "$(readlink -f "$0")")/../../.." && pwd)
     if [ ! -d "$dir/.git" ]; then
         echo "$dir is not a clone of the dotfiles; run install.sh first" >&2
         return 1
