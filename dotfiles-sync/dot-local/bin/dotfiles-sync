@@ -1,0 +1,36 @@
+#!/bin/sh
+# Fast-forward the dotfiles clone this script is linked from to origin/main
+# and relink.
+set -eu
+
+main() {
+    # Found through the link stow made, so a clone chosen with DOTFILES_DIR at
+    # install time needs no configuration here.
+    dir=$(cd "$(dirname "$(readlink -f "$0")")/../../.." && pwd)
+    if [ ! -d "$dir/.git" ]; then
+        echo "$dir is not a clone of the dotfiles; run install.sh first" >&2
+        return 1
+    fi
+    cd "$dir"
+    if [ "$(git symbolic-ref --quiet --short HEAD || true)" != main ] ||
+        [ -n "$(git status --porcelain)" ]; then
+        echo "$dir is not a clean checkout of main; not syncing" >&2
+        return 1
+    fi
+    if [ "$(git ls-remote origin refs/heads/main | cut -f1)" != "$(git rev-parse HEAD)" ]; then
+        git fetch --quiet origin main
+        git merge --quiet --ff-only FETCH_HEAD
+    fi
+    # Recorded only once linking succeeds, so a failed link is retried on the
+    # next run even though HEAD is already current.
+    head=$(git rev-parse HEAD)
+    [ "$(git rev-parse --quiet --verify refs/dotfiles/deployed || true)" != "$head" ] ||
+        return 0
+    ./link.sh
+    systemctl --user daemon-reload
+    git update-ref refs/dotfiles/deployed "$head"
+}
+
+# Wrapped in a function so the whole script is read before the merge can
+# replace this file.
+main "$@"
