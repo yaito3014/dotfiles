@@ -1,6 +1,7 @@
 #!/bin/sh
 # Tests for dotfiles-sync against a local origin whose link.sh and systemctl
-# are stubs that only record that they ran. Each run goes through a link in
+# are stubs that only record that they ran (link.sh fails while
+# $scratch/link-fails exists). Each run goes through a link in
 # $HOME/.local/bin into the clone, as stow installs it.
 set -eu
 
@@ -33,6 +34,7 @@ git init -q -b main "$work"
 cat >"$work/link.sh" <<EOF
 #!/bin/sh
 echo link >>"$log"
+[ ! -e "$scratch/link-fails" ]
 EOF
 chmod +x "$work/link.sh"
 mkdir -p "$work/dotfiles-sync/dot-local/bin"
@@ -64,6 +66,8 @@ run_sync() {
 }
 
 d=$(new_deploy)
+run_sync "$d" || fail "fresh clone: exited non-zero"
+grep -qx link "$log" || fail "fresh clone: did not run link.sh"
 run_sync "$d" || fail "up to date: exited non-zero"
 [ ! -s "$log" ] || fail "up to date: ran $(cat "$log")"
 
@@ -91,9 +95,22 @@ if run_sync "$d"; then fail "other branch: exited zero"; fi
     fail "other branch: switched branches"
 [ ! -s "$log" ] || fail "other branch: ran $(cat "$log")"
 
+d=$(new_deploy)
+run_sync "$d" || fail "link failure: setup exited non-zero"
+push_change four
+touch "$scratch/link-fails"
+if run_sync "$d"; then fail "link failure: exited zero"; fi
+rm "$scratch/link-fails"
+run_sync "$d" || fail "link failure: retry exited non-zero"
+grep -qx link "$log" || fail "link failure: did not retry link.sh"
+grep -qx 'systemctl --user daemon-reload' "$log" ||
+    fail "link failure: did not retry reloading user units"
+run_sync "$d" || fail "link failure: rerun exited non-zero"
+[ ! -s "$log" ] || fail "link failure: rerun ran $(cat "$log")"
+
 # Follows its link to the clone, whatever DOTFILES_DIR says.
 d=$(new_deploy)
-push_change four
+push_change five
 (export DOTFILES_DIR="$scratch/elsewhere" && run_sync "$d") ||
     fail "linked clone: exited non-zero"
 [ "$(git -C "$d" rev-parse HEAD)" = "$(git -C "$work" rev-parse HEAD)" ] ||

@@ -17,12 +17,18 @@ main() {
         echo "$dir is not a clean checkout of main; not syncing" >&2
         return 1
     fi
-    [ "$(git ls-remote origin refs/heads/main | cut -f1)" != "$(git rev-parse HEAD)" ] ||
+    if [ "$(git ls-remote origin refs/heads/main | cut -f1)" != "$(git rev-parse HEAD)" ]; then
+        git fetch --quiet origin main
+        git merge --quiet --ff-only FETCH_HEAD
+    fi
+    # Recorded only once linking succeeds, so a failed link is retried on the
+    # next run even though HEAD is already current.
+    head=$(git rev-parse HEAD)
+    [ "$(git rev-parse --quiet --verify refs/dotfiles/deployed || true)" != "$head" ] ||
         return 0
-    git fetch --quiet origin main
-    git merge --quiet --ff-only FETCH_HEAD
     ./link.sh
     systemctl --user daemon-reload
+    git update-ref refs/dotfiles/deployed "$head"
 }
 
 # Wrapped in a function so the whole script is read before the merge can
