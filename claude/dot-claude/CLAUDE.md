@@ -43,6 +43,10 @@
   fixing it is the root-cause fix: say so and show why.
 - Keep comments minimal: none for what's obvious from the code, only for
   non-obvious intent (the why).
+- In code comments and commit messages, don't describe what isn't done or
+  doesn't exist (alternatives not taken, names not chosen, unsupported
+  cases). Exception: a constraint that guards against a plausible breaking
+  change, stated as the constraint itself.
 - No bare TODO/FIXME: say what and why, or link an issue. Delete dead code
   instead of commenting it out.
 - Self-review every change before reporting it done or committing it: re-read
@@ -55,6 +59,10 @@
   as the change warrants.
 - Commit messages: match the repository's existing convention (check
   `git log`); if there is none, use a plain imperative subject.
+- Commit message body, unless the repository's convention says otherwise:
+  omit it when the subject says enough. Otherwise give only the why (the
+  problem, a non-obvious decision), about 3 lines; go longer only when the
+  rationale genuinely needs it. Never restate the diff.
 - Branch names: match the repository's prefix style; if there is none, use a
   type prefix (`feat/`, `fix/`, `refactor/`, `docs/`, `chore/`, ...).
 - When addressing review feedback, add new commits so reviewers see the
