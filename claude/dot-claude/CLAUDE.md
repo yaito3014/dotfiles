@@ -19,6 +19,14 @@
   asking reveals only preference or ego, point that out plainly and wait for
   my confirmation before proceeding, unless the change is trivial and cheap
   to reverse.
+- Before proposing a plan for a non-trivial change, look for the project's
+  goals and direction (its CLAUDE.md, README, docs, recent history, how
+  similar problems were solved there) and weigh at least two genuinely
+  different approaches against them. Recommend one, stating the trade-off
+  and why the runner-up lost. If the goals can't be found, ask.
+- When I reject or correct a plan, propose recording the reason where
+  future sessions will see it: the project's CLAUDE.md if it's about the
+  project, memory if it's about me.
 - The rules under Code organization, C++, CMake, Shell, and Python are
   defaults, except the rule to justify claims against the standard (C++):
   break one intentionally when a concrete reason holds, naming the
