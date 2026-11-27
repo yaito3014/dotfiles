@@ -34,4 +34,6 @@ printf '%s\n' "$status" | while IFS= read -r line; do
     esac
     move_aside "$target"
 done
-chezmoi apply --no-tty --error-on-conflict
+# Everything that differed is backed up by now. Without --force, chezmoi would
+# refuse to recreate a file it wrote before that was just moved aside.
+chezmoi apply --no-tty --force
