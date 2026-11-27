@@ -16,7 +16,9 @@ move_aside() {
 
 config=${XDG_CONFIG_HOME:-$HOME/.config}/chezmoi
 mkdir -p "$config"
-printf "sourceDir = '%s'\n" "$repo" >"$config/chezmoi.toml"
+# A fixed umask, so a login shell and the sync service, whose umasks may
+# differ, agree on file modes.
+printf "sourceDir = '%s'\numask = 0o022\n" "$repo" >"$config/chezmoi.toml"
 
 status=$(chezmoi status)
 printf '%s\n' "$status" | while IFS= read -r line; do
