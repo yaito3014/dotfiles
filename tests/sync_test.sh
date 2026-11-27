@@ -1,6 +1,7 @@
 #!/bin/sh
 # Tests for dotfiles-sync against a local origin holding a small chezmoi
-# source, each case with its own HOME and deploy clone.
+# source, each case with its own HOME and deploy clone. Also runs under Git
+# Bash on Windows.
 set -eu
 
 repo=$(cd -P "$(dirname "$0")/.." && pwd)
@@ -40,13 +41,22 @@ push_change() {
     git -C "$work" push -q origin main
 }
 
-# Start a case: a fresh HOME whose chezmoi source is a new clone, $d.
+# Start a case: a fresh HOME whose chezmoi source is a new clone, $d. chezmoi
+# on Windows takes its home from USERPROFILE and needs native paths.
 new_case() {
     HOME=$(mktemp -d "$scratch/home.XXXXXX")
     d=$HOME/source
     git clone -q "$scratch/origin.git" "$d"
     mkdir -p "$HOME/.config/chezmoi"
-    printf "sourceDir = '%s'\n" "$d" >"$HOME/.config/chezmoi/chezmoi.toml"
+    case $(uname -s) in
+    MINGW* | MSYS*)
+        USERPROFILE=$(cygpath -w "$HOME")
+        export USERPROFILE
+        source_dir=$(cygpath -m "$d")
+        ;;
+    *) source_dir=$d ;;
+    esac
+    printf "sourceDir = '%s'\n" "$source_dir" >"$HOME/.config/chezmoi/chezmoi.toml"
 }
 
 run_sync() {

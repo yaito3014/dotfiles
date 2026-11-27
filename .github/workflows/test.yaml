@@ -35,3 +35,48 @@ jobs:
           ~/.local/bin/mise --version
           ~/.local/bin/oh-my-posh --version
           systemctl --user is-enabled dotfiles-sync.timer
+  windows:
+    runs-on: windows-latest
+    env:
+      DOTFILES_DIR: ${{ github.workspace }}
+      DOTFILES_RUNNER: '0'
+    steps:
+      - uses: actions/checkout@v7
+      - name: start from a profile that does not end in a newline
+        shell: powershell
+        run: |
+          $ProfileHook = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'WindowsPowerShell\profile.ps1'
+          New-Item -ItemType Directory -Force (Split-Path $ProfileHook) | Out-Null
+          [IO.File]::WriteAllText($ProfileHook, '# existing')
+      # Windows PowerShell, which every machine has, rather than pwsh.
+      - run: ./install.ps1
+        shell: powershell
+      - name: re-run moves nothing aside
+        shell: powershell
+        run: |
+          $Backup = Join-Path $HOME '.local\state\dotfiles\backup'
+          function Get-BackupCount { @(Get-ChildItem $Backup -ErrorAction SilentlyContinue).Count }
+          $Before = Get-BackupCount
+          ./install.ps1
+          if ((Get-BackupCount) -ne $Before) { throw 'the re-run moved files aside' }
+      - shell: powershell
+        run: |
+          # Steps do not see PATH changes made by earlier ones.
+          $env:Path = [Environment]::GetEnvironmentVariable('Path', 'User') + ';' + [Environment]::GetEnvironmentVariable('Path', 'Machine')
+          git diff --no-index --quiet (Join-Path $HOME '.claude\CLAUDE.md') home/dot_claude/CLAUDE.md
+          if ($LASTEXITCODE -ne 0) { throw '~/.claude/CLAUDE.md is not applied' }
+          if (Test-Path (Join-Path $HOME '.zshrc')) { throw '~/.zshrc was applied on Windows' }
+          $ProfileHook = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'WindowsPowerShell\profile.ps1'
+          $Lines = @(Get-Content $ProfileHook)
+          if ($Lines[0] -ne '# existing') { throw 'the profile hook was joined onto the existing last line' }
+          if (@($Lines -like '$DotfilesProfile = *').Count -ne 1) { throw 'the profile hook is not on exactly one line of its own' }
+          Get-ScheduledTask -TaskName dotfiles-sync | Out-Null
+          chezmoi --version
+          oh-my-posh --version
+          mise --version
+          jq --version
+      - name: unit tests under Git Bash
+        shell: bash
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          for t in tests/*_test.sh; do sh "$t"; done

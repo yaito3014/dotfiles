@@ -1,0 +1,10 @@
+{{- if eq .chezmoi.os "windows" }}
+.bashrc
+.zprofile
+.zshenv
+.zshrc
+.config/systemd
+{{- else }}
+.config/powershell
+.local/bin/dotfiles-sync-watch.ps1
+{{- end }}

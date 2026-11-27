@@ -27,3 +27,23 @@ Code writes it, so its own keys are kept and only the keys in
 
 Set `DOTFILES_RUNNER=0` to skip the runner (the timer still syncs), or
 `DOTFILES_DIR` to apply from another clone.
+
+## Windows
+
+From an elevated PowerShell (or a normal one with `$env:DOTFILES_RUNNER = '0'`):
+
+```powershell
+irm https://raw.githubusercontent.com/yaito3014/dotfiles/main/install.ps1 | iex
+```
+
+This installs what is missing with winget (Git for Windows, jq, mise,
+oh-my-posh) and chezmoi into `~\.local\bin`, applies the same files minus the
+zsh, bash and systemd ones, adds a line to the PowerShell profiles that loads
+`~\.config\powershell\profile.ps1`, and allows local scripts for the current
+user so that profile can run. `apply.sh` and `dotfiles-sync` run under Git
+Bash, which the Claude Code hook needs anyway.
+
+Syncing works as on Linux: the runner service, as NETWORK SERVICE, writes
+`C:\ProgramData\dotfiles-sync\trigger`, and the `dotfiles-sync` scheduled
+task, started at logon as the user, runs `dotfiles-sync` when that file changes
+and at least every 5 minutes, logging to `~\.local\state\dotfiles\sync.log`.
