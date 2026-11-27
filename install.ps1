@@ -143,23 +143,12 @@ function Initialize-Trigger {
 }
 
 # The ops workflow targets each machine through a label equal to its runner
-# name, so every machine gets its own sync job.
+# name, so every machine gets its own sync job. The suffix keeps a Windows host
+# apart from its WSL distros, which report the same host name.
 function Initialize-Runner {
-    $Name = $env:COMPUTERNAME
+    $Name = "$env:COMPUTERNAME-windows"
+    if (Test-Path (Join-Path $RunnerDir '.runner')) { return }
     Initialize-GhAuth
-    if (Test-Path (Join-Path $RunnerDir '.runner')) {
-        # Filtered here rather than in --jq: Windows PowerShell drops the double
-        # quotes such a filter needs when passing it to gh.
-        $Runner = gh api "repos/$RunnerRepo/actions/runners" --paginate --jq '.runners[]' |
-            ForEach-Object { $_ | ConvertFrom-Json } | Where-Object { $_.name -eq $Name }
-        if ($Runner -and @($Runner.labels.name) -notcontains $Name) {
-            Write-Step "adding label $Name to runner $Name"
-            Invoke-Native {
-                gh api -X POST "repos/$RunnerRepo/actions/runners/$($Runner.id)/labels" -f "labels[]=$Name"
-            } | Out-Null
-        }
-        return
-    }
 
     $Arch = switch ($env:PROCESSOR_ARCHITECTURE) {
         'AMD64' { 'x64' }
