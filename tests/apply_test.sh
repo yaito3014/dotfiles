@@ -1,6 +1,6 @@
 #!/bin/sh
-# Tests for apply.sh, each against a throwaway HOME, with a systemctl stub so
-# no real user manager is touched.
+# Tests for apply.sh, each against a throwaway HOME, with a systemctl stub that
+# only records its calls so no real user manager is touched.
 set -eu
 
 repo=$(cd -P "$(dirname "$0")/.." && pwd)
@@ -14,7 +14,8 @@ fail() {
 }
 
 mkdir -p "$scratch/bin"
-printf '#!/bin/sh\nexit 1\n' >"$scratch/bin/systemctl"
+log=$scratch/systemctl.log
+printf '#!/bin/sh\necho "$*" >>"%s"\n' "$log" >"$scratch/bin/systemctl"
 chmod +x "$scratch/bin/systemctl"
 PATH="$scratch/bin:$PATH"
 
@@ -94,10 +95,15 @@ grep -q 'self-review.sh' "$h/.claude/settings.json" ||
 [ ! -e "$h/.local/state/dotfiles/backup" ] || fail "settings: made a backup"
 
 h=$(new_home)
+: >"$log"
 run_apply "$h"
+grep -qx -- '--user daemon-reload' "$log" ||
+    fail "units: did not reload user units on the first apply"
+: >"$log"
 run_apply "$h"
 applied "$h" .zshrc home/dot_zshrc || fail "rerun: ~/.zshrc is not applied"
 [ ! -e "$h/.local/state/dotfiles/backup" ] || fail "rerun: made a backup"
+! grep -q daemon-reload "$log" || fail "rerun: reloaded unchanged user units"
 
 [ "$failures" -eq 0 ] || exit 1
 echo "apply_test: ok"

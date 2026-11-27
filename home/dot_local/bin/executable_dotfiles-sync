@@ -1,36 +1,31 @@
 #!/bin/sh
-# Fast-forward the dotfiles clone this script is linked from to origin/main
-# and relink.
+# Fast-forward chezmoi's source clone of the dotfiles to origin/main and apply
+# it.
 set -eu
 
 main() {
-    # Found through the link stow made, so a clone chosen with DOTFILES_DIR at
-    # install time needs no configuration here.
-    dir=$(cd "$(dirname "$(readlink -f "$0")")/../../.." && pwd)
-    if [ ! -d "$dir/.git" ]; then
-        echo "$dir is not a clone of the dotfiles; run install.sh first" >&2
+    # Where install.sh puts chezmoi; not on systemd's default PATH.
+    PATH=$HOME/.local/bin:$PATH
+    src=$(chezmoi source-path)
+    if ! git -C "$src" rev-parse --git-dir >/dev/null 2>&1; then
+        echo "$src is not a clone of the dotfiles; run install.sh first" >&2
         return 1
     fi
-    cd "$dir"
+    cd "$src"
     if [ "$(git symbolic-ref --quiet --short HEAD || true)" != main ] ||
         [ -n "$(git status --porcelain)" ]; then
-        echo "$dir is not a clean checkout of main; not syncing" >&2
+        echo "$src is not a clean checkout of main; not syncing" >&2
         return 1
     fi
     if [ "$(git ls-remote origin refs/heads/main | cut -f1)" != "$(git rev-parse HEAD)" ]; then
         git fetch --quiet origin main
         git merge --quiet --ff-only FETCH_HEAD
     fi
-    # Recorded only once linking succeeds, so a failed link is retried on the
-    # next run even though HEAD is already current.
-    head=$(git rev-parse HEAD)
-    [ "$(git rev-parse --quiet --verify refs/dotfiles/deployed || true)" != "$head" ] ||
-        return 0
-    ./link.sh
-    systemctl --user daemon-reload
-    git update-ref refs/dotfiles/deployed "$head"
+    # A file edited outside chezmoi is left as it is and fails the run; every
+    # other file is still applied.
+    chezmoi apply --no-tty --error-on-conflict --keep-going
 }
 
-# Wrapped in a function so the whole script is read before the merge can
+# Wrapped in a function so the whole script is read before chezmoi can
 # replace this file.
 main "$@"
