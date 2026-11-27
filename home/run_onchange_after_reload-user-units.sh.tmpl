@@ -1,0 +1,9 @@
+#!/bin/sh
+# Reload the systemd user manager whenever these hashes change:
+{{- range list "path" "service" "timer" }}
+# dotfiles-sync.{{ . }} {{ include (printf "dot_config/systemd/user/dotfiles-sync.%s" .) | sha256sum }}
+{{- end }}
+set -eu
+# Skipped where there is no user manager, e.g. in a container.
+systemctl --user show-environment >/dev/null 2>&1 || exit 0
+systemctl --user daemon-reload

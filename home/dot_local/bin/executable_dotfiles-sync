@@ -1,0 +1,31 @@
+#!/bin/sh
+# Fast-forward chezmoi's source clone of the dotfiles to origin/main and apply
+# it.
+set -eu
+
+main() {
+    # Where install.sh puts chezmoi; not on systemd's default PATH.
+    PATH=$HOME/.local/bin:$PATH
+    src=$(chezmoi source-path)
+    if ! git -C "$src" rev-parse --git-dir >/dev/null 2>&1; then
+        echo "$src is not a clone of the dotfiles; run install.sh first" >&2
+        return 1
+    fi
+    cd "$src"
+    if [ "$(git symbolic-ref --quiet --short HEAD || true)" != main ] ||
+        [ -n "$(git status --porcelain)" ]; then
+        echo "$src is not a clean checkout of main; not syncing" >&2
+        return 1
+    fi
+    if [ "$(git ls-remote origin refs/heads/main | cut -f1)" != "$(git rev-parse HEAD)" ]; then
+        git fetch --quiet origin main
+        git merge --quiet --ff-only FETCH_HEAD
+    fi
+    # A file edited outside chezmoi is left as it is and fails the run; every
+    # other file is still applied.
+    chezmoi apply --no-tty --error-on-conflict --keep-going
+}
+
+# Wrapped in a function so the whole script is read before chezmoi can
+# replace this file.
+main "$@"

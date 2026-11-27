@@ -7,7 +7,7 @@
 # Run it via `sh -c` rather than `curl | sh` so prompts (sudo, gh auth login)
 # can read the terminal.
 #
-#   DOTFILES_DIR      clone to link from (default: ~/.local/share/dotfiles)
+#   DOTFILES_DIR      clone chezmoi applies from (default: ~/.local/share/dotfiles)
 #   DOTFILES_RUNNER   set to 0 to skip the self-hosted runner
 set -eu
 
@@ -60,6 +60,11 @@ install_tools() {
     if ! command -v mise >/dev/null && [ ! -x "$bin/mise" ]; then
         log "installing mise"
         curl -fsSL https://mise.run | sh
+    fi
+    # Always in $bin, where dotfiles-sync looks for it.
+    if [ ! -x "$bin/chezmoi" ]; then
+        log "installing chezmoi"
+        sh -c "$(curl -fsLS https://get.chezmoi.io)" -- -b "$bin"
     fi
     if ! command -v oh-my-posh >/dev/null && [ ! -x "$bin/oh-my-posh" ]; then
         log "installing oh-my-posh"
@@ -173,10 +178,10 @@ if [ -z "$here" ] || [ "$here" != "$(cd -P "$dir" 2>/dev/null && pwd || true)" ]
     bootstrap
 fi
 
-ensure_packages git stow zsh curl unzip ca-certificates
+ensure_packages git zsh curl unzip ca-certificates
 install_tools
-log "linking dotfiles from $dir"
-"$dir/link.sh"
+log "applying dotfiles from $dir"
+PATH=$bin:$PATH "$dir/apply.sh"
 set_login_shell
 
 if [ ! -d /run/systemd/system ]; then

@@ -1,125 +1,96 @@
 #!/bin/sh
-# Tests for dotfiles-sync against a local origin whose link.sh and systemctl
-# are stubs that only record that they ran (link.sh fails while
-# $scratch/link-fails exists). Each run goes through a link in
-# $HOME/.local/bin into the clone, as stow installs it.
+# Tests for dotfiles-sync against a local origin holding a small chezmoi
+# source, each case with its own HOME and deploy clone.
 set -eu
 
 repo=$(cd -P "$(dirname "$0")/.." && pwd)
-sync=$repo/dotfiles-sync/dot-local/bin/dotfiles-sync
+sync=$repo/home/dot_local/bin/executable_dotfiles-sync
 scratch=$(mktemp -d)
 trap 'rm -rf "$scratch"' EXIT
 failures=0
+
+# chezmoi keeps its config and state under these when set (CI sets
+# XDG_CONFIG_HOME), so only HOME may decide where they go.
+unset XDG_CONFIG_HOME XDG_DATA_HOME XDG_STATE_HOME XDG_CACHE_HOME
 
 fail() {
     printf 'FAIL: %s\n' "$1" >&2
     failures=$((failures + 1))
 }
 
-export HOME="$scratch/home" GIT_CONFIG_NOSYSTEM=1
+export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null
 export GIT_AUTHOR_NAME=test GIT_AUTHOR_EMAIL=test@example.invalid
 export GIT_COMMITTER_NAME=test GIT_COMMITTER_EMAIL=test@example.invalid
-mkdir -p "$HOME/.local/bin" "$scratch/bin"
-log=$scratch/log
-
-cat >"$scratch/bin/systemctl" <<EOF
-#!/bin/sh
-echo "systemctl \$*" >>"$log"
-EOF
-chmod +x "$scratch/bin/systemctl"
-PATH="$scratch/bin:$PATH"
 
 work=$scratch/work
 git init -q -b main "$work"
-cat >"$work/link.sh" <<EOF
-#!/bin/sh
-echo link >>"$log"
-[ ! -e "$scratch/link-fails" ]
-EOF
-chmod +x "$work/link.sh"
-mkdir -p "$work/dotfiles-sync/dot-local/bin"
-cp "$sync" "$work/dotfiles-sync/dot-local/bin/"
+mkdir "$work/home"
+echo home >"$work/.chezmoiroot"
+echo one >"$work/home/dot_file"
+echo one >"$work/home/dot_other"
 git -C "$work" add .
 git -C "$work" commit -q -m init
 git clone -q --bare "$work" "$scratch/origin.git"
 git -C "$work" remote add origin "$scratch/origin.git"
 
+# Commit $2 as the contents of home/dot_$1 and push it.
 push_change() {
-    echo "$1" >"$work/file"
-    git -C "$work" add file
-    git -C "$work" commit -q -m "$1"
+    echo "$2" >"$work/home/dot_$1"
+    git -C "$work" commit -q -am "$1: $2"
     git -C "$work" push -q origin main
 }
 
-new_deploy() {
-    d=$(mktemp -d "$scratch/deploy.XXXXXX")
-    rmdir "$d"
+# Start a case: a fresh HOME whose chezmoi source is a new clone, $d.
+new_case() {
+    HOME=$(mktemp -d "$scratch/home.XXXXXX")
+    d=$HOME/source
     git clone -q "$scratch/origin.git" "$d"
-    echo "$d"
+    mkdir -p "$HOME/.config/chezmoi"
+    printf "sourceDir = '%s'\n" "$d" >"$HOME/.config/chezmoi/chezmoi.toml"
 }
 
 run_sync() {
-    : >"$log"
-    ln -sfn "$1/dotfiles-sync/dot-local/bin/dotfiles-sync" \
-        "$HOME/.local/bin/dotfiles-sync"
-    "$HOME/.local/bin/dotfiles-sync" >/dev/null 2>&1
+    "$sync" >/dev/null 2>&1
 }
 
-d=$(new_deploy)
-run_sync "$d" || fail "fresh clone: exited non-zero"
-grep -qx link "$log" || fail "fresh clone: did not run link.sh"
-run_sync "$d" || fail "up to date: exited non-zero"
-[ ! -s "$log" ] || fail "up to date: ran $(cat "$log")"
+new_case
+run_sync || fail "up to date: exited non-zero"
+[ "$(cat "$HOME/.file" 2>/dev/null)" = one ] || fail "up to date: did not apply"
 
-d=$(new_deploy)
-push_change one
-run_sync "$d" || fail "behind: exited non-zero"
+new_case
+push_change file two
+run_sync || fail "behind: exited non-zero"
 [ "$(git -C "$d" rev-parse HEAD)" = "$(git -C "$work" rev-parse HEAD)" ] ||
     fail "behind: did not fast-forward"
-grep -qx link "$log" || fail "behind: did not run link.sh"
-grep -qx 'systemctl --user daemon-reload' "$log" ||
-    fail "behind: did not reload user units"
+[ "$(cat "$HOME/.file" 2>/dev/null)" = two ] || fail "behind: did not apply"
 
-d=$(new_deploy)
-push_change two
-echo local >"$d/file"
-if run_sync "$d"; then fail "dirty: exited zero"; fi
-[ "$(cat "$d/file")" = local ] || fail "dirty: overwrote local changes"
-[ ! -s "$log" ] || fail "dirty: ran $(cat "$log")"
+new_case
+push_change file three
+echo local >"$d/home/dot_file"
+if run_sync; then fail "dirty: exited zero"; fi
+[ "$(cat "$d/home/dot_file")" = local ] || fail "dirty: overwrote local changes"
+[ ! -e "$HOME/.file" ] || fail "dirty: applied"
 
-d=$(new_deploy)
-push_change three
+new_case
+push_change file four
 git -C "$d" switch -q -c topic
-if run_sync "$d"; then fail "other branch: exited zero"; fi
+if run_sync; then fail "other branch: exited zero"; fi
 [ "$(git -C "$d" branch --show-current)" = topic ] ||
     fail "other branch: switched branches"
-[ ! -s "$log" ] || fail "other branch: ran $(cat "$log")"
+[ ! -e "$HOME/.file" ] || fail "other branch: applied"
 
-d=$(new_deploy)
-run_sync "$d" || fail "link failure: setup exited non-zero"
-push_change four
-touch "$scratch/link-fails"
-if run_sync "$d"; then fail "link failure: exited zero"; fi
-rm "$scratch/link-fails"
-run_sync "$d" || fail "link failure: retry exited non-zero"
-grep -qx link "$log" || fail "link failure: did not retry link.sh"
-grep -qx 'systemctl --user daemon-reload' "$log" ||
-    fail "link failure: did not retry reloading user units"
-run_sync "$d" || fail "link failure: rerun exited non-zero"
-[ ! -s "$log" ] || fail "link failure: rerun ran $(cat "$log")"
+new_case
+run_sync || fail "edited target: setup exited non-zero"
+echo edited >"$HOME/.file"
+push_change other five
+if run_sync; then fail "edited target: exited zero"; fi
+[ "$(cat "$HOME/.file")" = edited ] || fail "edited target: overwrote the edit"
+[ "$(cat "$HOME/.other" 2>/dev/null)" = five ] ||
+    fail "edited target: did not apply the other files"
 
-# Follows its link to the clone, whatever DOTFILES_DIR says.
-d=$(new_deploy)
-push_change five
-(export DOTFILES_DIR="$scratch/elsewhere" && run_sync "$d") ||
-    fail "linked clone: exited non-zero"
-[ "$(git -C "$d" rev-parse HEAD)" = "$(git -C "$work" rev-parse HEAD)" ] ||
-    fail "linked clone: did not fast-forward"
-
-lone=$scratch/lone
-mkdir -p "$lone/dotfiles-sync/dot-local/bin"
-cp "$sync" "$lone/dotfiles-sync/dot-local/bin/"
-if run_sync "$lone"; then fail "not a clone: exited zero"; fi
+new_case
+rm -rf "$d"
+if run_sync; then fail "missing clone: exited zero"; fi
 
 [ "$failures" -eq 0 ] || exit 1
 echo "sync_test: ok"
