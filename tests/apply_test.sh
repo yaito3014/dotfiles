@@ -1,6 +1,7 @@
 #!/bin/sh
 # Tests for apply.sh, each against a throwaway HOME, with a systemctl stub that
-# only records its calls so no real user manager is touched.
+# only records its calls so no real user manager is touched. Also runs under
+# Git Bash on Windows, where the symlink and systemd cases do not apply.
 set -eu
 
 repo=$(cd -P "$(dirname "$0")/.." && pwd)
@@ -17,6 +18,11 @@ fail() {
     failures=$((failures + 1))
 }
 
+case $(uname -s) in
+MINGW* | MSYS*) windows=true ;;
+*) windows=false ;;
+esac
+
 mkdir -p "$scratch/bin"
 log=$scratch/systemctl.log
 printf '#!/bin/sh\necho "$*" >>"%s"\n' "$log" >"$scratch/bin/systemctl"
@@ -27,8 +33,20 @@ new_home() {
     mktemp -d "$scratch/home.XXXXXX"
 }
 
+# Run the rest of the arguments with HOME $1; chezmoi on Windows takes its
+# home from USERPROFILE instead.
+with_home() {
+    home_dir=$1
+    shift
+    if $windows; then
+        HOME=$home_dir USERPROFILE=$(cygpath -w "$home_dir") "$@"
+    else
+        HOME=$home_dir "$@"
+    fi
+}
+
 run_apply() {
-    HOME=$1 "$repo/apply.sh" >/dev/null
+    with_home "$1" "$repo/apply.sh" >/dev/null
 }
 
 # $2 is a regular file in HOME $1 with the contents of $3 in the repository.
@@ -42,23 +60,40 @@ backup_of() {
 
 h=$(new_home)
 run_apply "$h"
-applied "$h" .zshrc home/dot_zshrc || fail "fresh: ~/.zshrc is not applied"
+applied "$h" .claude/CLAUDE.md home/dot_claude/CLAUDE.md ||
+    fail "fresh: ~/.claude/CLAUDE.md is not applied"
 for f in .codex/AGENTS.md .gemini/GEMINI.md .copilot/copilot-instructions.md; do
     applied "$h" "$f" home/dot_claude/CLAUDE.md ||
         fail "fresh: ~/$f is not a copy of CLAUDE.md"
 done
 [ -x "$h/.claude/hooks/self-review.sh" ] || fail "fresh: hook is not executable"
-[ "$(HOME=$h chezmoi source-path)" = "$repo/home" ] ||
+applied "$h" .local/bin/dotfiles-sync home/dot_local/bin/executable_dotfiles-sync ||
+    fail "fresh: dotfiles-sync is not applied"
+[ "$(cd "$(with_home "$h" chezmoi source-path)" && pwd -P)" = "$repo/home" ] ||
     fail "fresh: chezmoi does not use this clone as its source"
+if $windows; then
+    applied "$h" .config/powershell/profile.ps1 home/dot_config/powershell/profile.ps1 ||
+        fail "fresh: the PowerShell profile is not applied"
+    for f in .zshrc .bashrc .config/systemd; do
+        [ ! -e "$h/$f" ] || fail "fresh: applied ~/$f on Windows"
+    done
+else
+    applied "$h" .zshrc home/dot_zshrc || fail "fresh: ~/.zshrc is not applied"
+    for f in .config/powershell .local/bin/dotfiles-sync-watch.ps1; do
+        [ ! -e "$h/$f" ] || fail "fresh: applied ~/$f outside Windows"
+    done
+fi
 [ ! -e "$h/.local/state/dotfiles/backup" ] || fail "fresh: made a backup"
 
 h=$(new_home)
-printf 'old\n' >"$h/.zshrc"
+mkdir -p "$h/.claude"
+printf 'old\n' >"$h/.claude/CLAUDE.md"
 run_apply "$h"
-applied "$h" .zshrc home/dot_zshrc || fail "regular file: ~/.zshrc is not applied"
-b=$(backup_of "$h" .zshrc)
+applied "$h" .claude/CLAUDE.md home/dot_claude/CLAUDE.md ||
+    fail "regular file: ~/.claude/CLAUDE.md is not applied"
+b=$(backup_of "$h" .claude/CLAUDE.md)
 { [ -f "$b" ] && [ "$(cat "$b")" = old ]; } ||
-    fail "regular file: old ~/.zshrc was not backed up"
+    fail "regular file: old ~/.claude/CLAUDE.md was not backed up"
 
 h=$(new_home)
 mkdir -p "$h/.config/git"
@@ -69,24 +104,28 @@ applied "$h" .config/git/config home/dot_config/git/config ||
 [ -f "$(backup_of "$h" .config/git/config)" ] ||
     fail "nested file: old ~/.config/git/config was not backed up"
 
-h=$(new_home)
-ln -s /nonexistent "$h/.bashrc"
-run_apply "$h"
-applied "$h" .bashrc home/dot_bashrc || fail "foreign link: ~/.bashrc is not applied"
-[ -L "$(backup_of "$h" .bashrc)" ] ||
-    fail "foreign link: old ~/.bashrc link was not backed up"
+# Git Bash's ln copies instead of linking unless told otherwise, so these only
+# mean something elsewhere.
+if ! $windows; then
+    h=$(new_home)
+    ln -s /nonexistent "$h/.bashrc"
+    run_apply "$h"
+    applied "$h" .bashrc home/dot_bashrc || fail "foreign link: ~/.bashrc is not applied"
+    [ -L "$(backup_of "$h" .bashrc)" ] ||
+        fail "foreign link: old ~/.bashrc link was not backed up"
 
-h=$(new_home)
-other=$(mktemp -d "$scratch/other.XXXXXX")
-printf 'theirs\n' >"$other/config.toml"
-ln -s "$other" "$h/.oh-my-posh"
-run_apply "$h"
-applied "$h" .oh-my-posh/config.toml home/dot_oh-my-posh/config.toml ||
-    fail "folded dir: ~/.oh-my-posh/config.toml is not applied"
-[ "$(cat "$other/config.toml" 2>/dev/null)" = theirs ] ||
-    fail "folded dir: changed the directory the old link pointed to"
-[ -L "$(backup_of "$h" .oh-my-posh)" ] ||
-    fail "folded dir: old ~/.oh-my-posh link was not backed up"
+    h=$(new_home)
+    other=$(mktemp -d "$scratch/other.XXXXXX")
+    printf 'theirs\n' >"$other/config.toml"
+    ln -s "$other" "$h/.oh-my-posh"
+    run_apply "$h"
+    applied "$h" .oh-my-posh/config.toml home/dot_oh-my-posh/config.toml ||
+        fail "folded dir: ~/.oh-my-posh/config.toml is not applied"
+    [ "$(cat "$other/config.toml" 2>/dev/null)" = theirs ] ||
+        fail "folded dir: changed the directory the old link pointed to"
+    [ -L "$(backup_of "$h" .oh-my-posh)" ] ||
+        fail "folded dir: old ~/.oh-my-posh link was not backed up"
+fi
 
 h=$(new_home)
 mkdir -p "$h/.claude"
@@ -101,11 +140,16 @@ grep -q 'self-review.sh' "$h/.claude/settings.json" ||
 h=$(new_home)
 : >"$log"
 run_apply "$h"
-grep -qx -- '--user daemon-reload' "$log" ||
-    fail "units: did not reload user units on the first apply"
+if $windows; then
+    [ ! -s "$log" ] || fail "units: ran systemctl on Windows"
+else
+    grep -qx -- '--user daemon-reload' "$log" ||
+        fail "units: did not reload user units on the first apply"
+fi
 : >"$log"
 run_apply "$h"
-applied "$h" .zshrc home/dot_zshrc || fail "rerun: ~/.zshrc is not applied"
+applied "$h" .claude/CLAUDE.md home/dot_claude/CLAUDE.md ||
+    fail "rerun: ~/.claude/CLAUDE.md is not applied"
 [ ! -e "$h/.local/state/dotfiles/backup" ] || fail "rerun: made a backup"
 ! grep -q daemon-reload "$log" || fail "rerun: reloaded unchanged user units"
 

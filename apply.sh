@@ -4,7 +4,8 @@
 # guards files it has written before.
 set -eu
 
-repo=$(cd -P "$(dirname "$0")" && pwd)
+# Under Git Bash, pwd -W gives the C:/... form chezmoi.exe understands.
+repo=$(cd -P "$(dirname "$0")" && { pwd -W 2>/dev/null || pwd; })
 backup="$HOME/.local/state/dotfiles/backup/$(date +%Y%m%dT%H%M%S)"
 
 move_aside() {

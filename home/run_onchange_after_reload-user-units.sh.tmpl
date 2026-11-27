@@ -1,3 +1,4 @@
+{{- if eq .chezmoi.os "linux" -}}
 #!/bin/sh
 # Reload the systemd user manager whenever these hashes change:
 {{- range list "path" "service" "timer" }}
@@ -7,3 +8,4 @@ set -eu
 # Skipped where there is no user manager, e.g. in a container.
 systemctl --user show-environment >/dev/null 2>&1 || exit 0
 systemctl --user daemon-reload
+{{ end -}}
