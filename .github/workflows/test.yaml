@@ -69,4 +69,6 @@ jobs:
           jq --version
       - name: unit tests under Git Bash
         shell: bash
-        run: for t in tests/*_test.sh; do sh "$t"; done
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          for t in tests/*_test.sh; do sh "$t"; done
