@@ -144,7 +144,7 @@ function Initialize-Trigger {
 
 # The ops workflow targets each machine through a label equal to its runner
 # name, so every machine gets its own sync job. The suffix keeps a Windows host
-# apart from its WSL instances, which have the same host name.
+# apart from its WSL distros, which report the same host name.
 function Initialize-Runner {
     $Name = "$env:COMPUTERNAME-windows"
     if (Test-Path (Join-Path $RunnerDir '.runner')) { return }

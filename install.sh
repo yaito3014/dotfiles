@@ -111,11 +111,23 @@ setup_trigger() {
     as_root systemd-tmpfiles --create /etc/tmpfiles.d/dotfiles-sync.conf
 }
 
+# A WSL distro reports its Windows host's name, so the suffix tells it apart
+# from the host and from other distros on it, whose names WSL keeps unique;
+# elsewhere the distro ID does.
+runner_name() {
+    if [ -n "${WSL_DISTRO_NAME-}" ]; then
+        suffix=$WSL_DISTRO_NAME
+    else
+        # shellcheck disable=SC1091 # present on every supported system
+        suffix=$(. /etc/os-release && echo "$ID")
+    fi
+    printf '%s-%s\n' "$(uname -n)" "$suffix"
+}
+
 # The ops workflow targets each machine through a label equal to its runner
-# name, so every machine gets its own sync job. The suffix keeps a WSL
-# instance apart from its Windows host, which has the same host name.
+# name, so every machine gets its own sync job.
 setup_runner() {
-    name=$(uname -n)-linux
+    name=$(runner_name)
     ensure_gh_auth
     if as_root test -f "$runner_dir/.runner"; then
         current=$(as_root sed -n 's/.*"agentName": *"\([^"]*\)".*/\1/p' "$runner_dir/.runner")
