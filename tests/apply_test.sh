@@ -8,6 +8,10 @@ scratch=$(mktemp -d)
 trap 'rm -rf "$scratch"' EXIT
 failures=0
 
+# chezmoi keeps its config and state under these when set (CI sets
+# XDG_CONFIG_HOME), so only HOME may decide where they go.
+unset XDG_CONFIG_HOME XDG_DATA_HOME XDG_STATE_HOME XDG_CACHE_HOME
+
 fail() {
     printf 'FAIL: %s\n' "$1" >&2
     failures=$((failures + 1))

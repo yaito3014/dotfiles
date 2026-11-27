@@ -13,8 +13,9 @@ move_aside() {
     printf 'moved ~/%s to %s\n' "$1" "$backup/$1"
 }
 
-mkdir -p "$HOME/.config/chezmoi"
-printf "sourceDir = '%s'\n" "$repo" >"$HOME/.config/chezmoi/chezmoi.toml"
+config=${XDG_CONFIG_HOME:-$HOME/.config}/chezmoi
+mkdir -p "$config"
+printf "sourceDir = '%s'\n" "$repo" >"$config/chezmoi.toml"
 
 status=$(chezmoi status)
 printf '%s\n' "$status" | while IFS= read -r line; do
