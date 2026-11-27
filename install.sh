@@ -112,42 +112,42 @@ setup_trigger() {
 }
 
 # The ops workflow targets each machine through a label equal to its runner
-# name, so every machine gets its own sync job.
+# name, so every machine gets its own sync job. The suffix keeps a WSL
+# instance apart from its Windows host, which has the same host name.
 setup_runner() {
-    host=$(uname -n)
+    name=$(uname -n)-linux
     ensure_gh_auth
     if as_root test -f "$runner_dir/.runner"; then
-        info=$(gh api "repos/$runner_repo/actions/runners" --paginate --jq \
-            ".runners[] | select(.name == \"$host\")
-             | \"\(.id) \(any(.labels[]; .name == \"$host\"))\"")
-        id=${info% *}
-        if [ -n "$info" ] && [ "${info#* }" != true ]; then
-            log "adding label $host to runner $host"
-            gh api -X POST "repos/$runner_repo/actions/runners/$id/labels" \
-                -f "labels[]=$host" >/dev/null
-        fi
-        return 0
+        current=$(as_root sed -n 's/.*"agentName": *"\([^"]*\)".*/\1/p' "$runner_dir/.runner")
+        [ "$current" != "$name" ] || return 0
+        log "re-registering runner $current as $name"
+        # shellcheck disable=SC2016 # expanded by the inner sh
+        as_root sh -c 'cd "$1" && ./svc.sh stop && ./svc.sh uninstall' sh "$runner_dir"
+        token=$(gh api -X POST "repos/$runner_repo/actions/runners/remove-token" --jq .token)
+        # shellcheck disable=SC2016 # expanded by the inner sh
+        as_runner sh -c 'cd "$1" && ./config.sh remove --token "$2"' sh "$runner_dir" "$token"
+    else
+        case $(uname -m) in
+        x86_64) arch=x64 ;;
+        aarch64) arch=arm64 ;;
+        *)
+            echo "no actions runner build for $(uname -m)" >&2
+            return 1
+            ;;
+        esac
+        version=$(gh api repos/actions/runner/releases/latest --jq '.tag_name | ltrimstr("v")')
+        log "installing actions runner $version"
+        as_runner mkdir -p "$runner_dir"
+        curl -fsSL "https://github.com/actions/runner/releases/download/v$version/actions-runner-linux-$arch-$version.tar.gz" |
+            as_runner tar -xz -C "$runner_dir"
+        as_root "$runner_dir/bin/installdependencies.sh"
     fi
-
-    case $(uname -m) in
-    x86_64) arch=x64 ;;
-    aarch64) arch=arm64 ;;
-    *)
-        echo "no actions runner build for $(uname -m)" >&2
-        return 1
-        ;;
-    esac
-    version=$(gh api repos/actions/runner/releases/latest --jq '.tag_name | ltrimstr("v")')
-    log "installing actions runner $version as $host"
-    as_runner mkdir -p "$runner_dir"
-    curl -fsSL "https://github.com/actions/runner/releases/download/v$version/actions-runner-linux-$arch-$version.tar.gz" |
-        as_runner tar -xz -C "$runner_dir"
-    as_root "$runner_dir/bin/installdependencies.sh"
+    log "registering runner $name"
     token=$(gh api -X POST "repos/$runner_repo/actions/runners/registration-token" --jq .token)
     # shellcheck disable=SC2016 # expanded by the inner sh
     as_runner sh -c 'cd "$1" && ./config.sh --unattended --replace \
         --url "https://github.com/$2" --token "$3" --name "$4" --labels "$4"' \
-        sh "$runner_dir" "$runner_repo" "$token" "$host"
+        sh "$runner_dir" "$runner_repo" "$token" "$name"
     # shellcheck disable=SC2016 # expanded by the inner sh
     as_root sh -c 'cd "$1" && ./svc.sh install "$2" && ./svc.sh start' \
         sh "$runner_dir" "$runner_user"
