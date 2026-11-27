@@ -1,0 +1,9 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- /* Claude Code writes this file itself, so keep its keys and let the
+       repository's own top-level keys win. */ -}}
+{{- $settings := dict -}}
+{{- if .chezmoi.stdin -}}{{ $settings = fromJson .chezmoi.stdin }}{{ end -}}
+{{- range $key, $value := includeTemplate "claude-settings.json" . | fromJson -}}
+{{-   $_ := set $settings $key $value -}}
+{{- end -}}
+{{- toPrettyJson $settings }}

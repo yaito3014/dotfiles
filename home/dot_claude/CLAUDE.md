@@ -1,7 +1,7 @@
 # Global preferences
-<!-- Managed in dotfiles: ~/dotfiles/claude/dot-claude/CLAUDE.md, symlinked to
-     ~/.claude/CLAUDE.md, ~/.codex/AGENTS.md, ~/.gemini/GEMINI.md and
-     ~/.copilot/copilot-instructions.md -->
+<!-- Managed in the dotfiles repository as home/dot_claude/CLAUDE.md; chezmoi
+     copies it to ~/.claude/CLAUDE.md, ~/.codex/AGENTS.md, ~/.gemini/GEMINI.md
+     and ~/.copilot/copilot-instructions.md. Edit the source, not a copy. -->
 
 - Respond in the language I wrote my message in (e.g. Japanese → Japanese).
 - When writing Japanese: avoid dashes (—/―), preferring commas, parentheses, or
