@@ -127,6 +127,17 @@ if ! $windows; then
         fail "folded dir: old ~/.oh-my-posh link was not backed up"
 fi
 
+# Modes must not depend on the umask of whoever applies (a login shell and
+# the sync service may differ); Windows has no such modes.
+if ! $windows; then
+    h=$(new_home)
+    (umask 002 && run_apply "$h")
+    [ "$(stat -c %a "$h/.claude/CLAUDE.md")" = 644 ] ||
+        fail "umask: applied ~/.claude/CLAUDE.md with the caller's umask"
+    [ "$(stat -c %a "$h/.local/bin/dotfiles-sync")" = 755 ] ||
+        fail "umask: applied ~/.local/bin/dotfiles-sync with the caller's umask"
+fi
+
 h=$(new_home)
 mkdir -p "$h/.claude"
 printf '{"hooks": {}, "fromApp": true}\n' >"$h/.claude/settings.json"
