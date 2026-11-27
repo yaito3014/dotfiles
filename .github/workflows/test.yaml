@@ -8,8 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - run: sudo apt-get update -q && sudo apt-get install -y -q shellcheck stow
-      - run: shellcheck install.sh link.sh dotfiles-sync/dot-local/bin/dotfiles-sync tests/*.sh
+      - run: sudo apt-get update -q && sudo apt-get install -y -q shellcheck
+      - run: |
+          sh -c "$(curl -fsLS https://get.chezmoi.io)" -- -b ~/.local/bin
+          echo ~/.local/bin >>"$GITHUB_PATH"
+      - run: shellcheck install.sh apply.sh home/dot_local/bin/executable_dotfiles-sync tests/*.sh
       - run: for t in tests/*_test.sh; do sh "$t"; done
   install:
     runs-on: ubuntu-latest
@@ -26,7 +29,8 @@ jobs:
           ./install.sh
           test "$(backups)" = "$before"
       - run: |
-          test "$(readlink -f ~/.zshrc)" = "$PWD/zsh/dot-zshrc"
+          cmp ~/.zshrc home/dot_zshrc
+          test "$(~/.local/bin/chezmoi source-path)" = "$PWD/home"
           test "$(getent passwd "$(id -un)" | cut -d: -f7)" = "$(command -v zsh)"
           ~/.local/bin/mise --version
           ~/.local/bin/oh-my-posh --version
