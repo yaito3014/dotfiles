@@ -42,6 +42,12 @@ jobs:
       DOTFILES_RUNNER: '0'
     steps:
       - uses: actions/checkout@v7
+      - name: start from a profile that does not end in a newline
+        shell: powershell
+        run: |
+          $ProfileHook = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'WindowsPowerShell\profile.ps1'
+          New-Item -ItemType Directory -Force (Split-Path $ProfileHook) | Out-Null
+          [IO.File]::WriteAllText($ProfileHook, '# existing')
       # Windows PowerShell, which every machine has, rather than pwsh.
       - run: ./install.ps1
         shell: powershell
@@ -61,7 +67,9 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw '~/.claude/CLAUDE.md is not applied' }
           if (Test-Path (Join-Path $HOME '.zshrc')) { throw '~/.zshrc was applied on Windows' }
           $ProfileHook = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'WindowsPowerShell\profile.ps1'
-          if (-not (Select-String -Quiet -SimpleMatch 'powershell\profile.ps1' $ProfileHook)) { throw 'the profile hook is missing' }
+          $Lines = @(Get-Content $ProfileHook)
+          if ($Lines[0] -ne '# existing') { throw 'the profile hook was joined onto the existing last line' }
+          if (@($Lines -like '$DotfilesProfile = *').Count -ne 1) { throw 'the profile hook is not on exactly one line of its own' }
           Get-ScheduledTask -TaskName dotfiles-sync | Out-Null
           chezmoi --version
           oh-my-posh --version
