@@ -12,7 +12,7 @@ jobs:
       - run: |
           sh -c "$(curl -fsLS https://get.chezmoi.io)" -- -b ~/.local/bin
           echo ~/.local/bin >>"$GITHUB_PATH"
-      - run: shellcheck install.sh apply.sh home/dot_local/bin/executable_dotfiles-sync tests/*.sh
+      - run: shellcheck install.sh apply.sh link.sh home/dot_local/bin/executable_dotfiles-sync tests/*.sh
       - run: for t in tests/*_test.sh; do sh "$t"; done
   install:
     runs-on: ubuntu-latest
