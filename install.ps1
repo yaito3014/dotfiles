@@ -110,6 +110,12 @@ function Set-ProfileHook {
         if ((Test-Path $ProfilePath) -and (Get-Content $ProfilePath) -contains $Line) { continue }
         Write-Step "loading the dotfiles profile from $ProfilePath"
         New-Item -ItemType Directory -Force (Split-Path $ProfilePath) | Out-Null
+        # Add-Content ends what it writes with a newline but does not start
+        # with one, so it would join $Line onto an unterminated last line.
+        if (Test-Path $ProfilePath) {
+            $Existing = Get-Content -Raw $ProfilePath
+            if ($Existing -and -not $Existing.EndsWith("`n")) { Add-Content -Path $ProfilePath -Value '' }
+        }
         Add-Content -Path $ProfilePath -Value $Line
     }
 }
