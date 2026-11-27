@@ -139,6 +139,16 @@ if ! $windows; then
 fi
 
 h=$(new_home)
+run_apply "$h"
+printf 'edited\n' >"$h/.config/git/config"
+run_apply "$h" 2>/dev/null || fail "edited: re-run exited non-zero"
+applied "$h" .config/git/config home/dot_config/git/config ||
+    fail "edited: ~/.config/git/config was not applied again"
+b=$(backup_of "$h" .config/git/config)
+{ [ -f "$b" ] && [ "$(cat "$b")" = edited ]; } ||
+    fail "edited: the edit was not backed up"
+
+h=$(new_home)
 mkdir -p "$h/.claude"
 printf '{"hooks": {}, "fromApp": true}\n' >"$h/.claude/settings.json"
 run_apply "$h"
